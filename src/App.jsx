@@ -5,6 +5,7 @@ import { buildPlanMarkdown } from "./lib/exportPlan";
 import { PHASES, DEV_PHASES } from "./data/phases";
 import { EXAMPLES, TABS } from "./data/constants";
 import { TEMPLATES } from "./data/templates";
+import { useLanguage } from "./i18n/LanguageContext";
 import Panel from "./components/Panel";
 import BinaView from "./components/BinaView";
 import TaskBoardView from "./components/TaskBoardView";
@@ -22,6 +23,7 @@ import SablonMotoruView from "./components/SablonMotoruView";
 
 // ─── Ana Uygulama ─────────────────────────────────────────────────────────────
 export default function App() {
+  const { lang, setLang, t } = useLanguage();
   const [idea, setIdea]           = useState("");
   const [loading, setLoading]     = useState(false);
   const [step, setStep]           = useState("");
@@ -350,32 +352,42 @@ export default function App() {
 
         {/* HEADER */}
         <div style={{ textAlign: "center", padding: "48px 0 36px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 14 }}>
+            <button onClick={() => setLang("tr")} type="button"
+              style={{ background: lang === "tr" ? "#6c63ff" : "transparent", border: "1px solid #6c63ff", borderRadius: 4, color: lang === "tr" ? "#fff" : "#6c63ff", fontFamily: "monospace", fontSize: 10, fontWeight: 700, padding: "3px 9px", cursor: "pointer" }}>
+              TR
+            </button>
+            <button onClick={() => setLang("en")} type="button"
+              style={{ background: lang === "en" ? "#6c63ff" : "transparent", border: "1px solid #6c63ff", borderRadius: 4, color: lang === "en" ? "#fff" : "#6c63ff", fontFamily: "monospace", fontSize: 10, fontWeight: 700, padding: "3px 9px", cursor: "pointer" }}>
+              EN
+            </button>
+          </div>
           <div style={{ display: "inline-block", fontFamily: "monospace", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#6c63ff", border: "1px solid #6c63ff", padding: "4px 12px", borderRadius: 2, marginBottom: 20, opacity: 0.8 }}>
-            Master Prompt v4.0
+            {t("badge")}
           </div>
           <h1 style={{ fontSize: "clamp(26px,6vw,46px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em", margin: "0 0 12px", background: "linear-gradient(135deg,#fff 30%,#6c63ff 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Uygulama Mimar Stüdyosu
+            {t("appTitle")}
           </h1>
           <p style={{ color: "#7a7a9a", fontSize: 14, lineHeight: 1.6, maxWidth: 440, margin: "0 auto" }}>
-            Fikrini yaz. Mimari, güvenlik, roadmap ve tüm plan otomatik üretilsin.
+            {t("appSubtitle")}
           </p>
           <div style={{ minHeight: 22, marginTop: 14, display: "flex", justifyContent: "center", alignItems: "center", gap: 10 }}>
             {restoring ? (
-              <span style={{ fontSize: 11, color: "#4a4a6a", fontFamily: "monospace" }}>Kayıtlı proje kontrol ediliyor...</span>
+              <span style={{ fontSize: 11, color: "#4a4a6a", fontFamily: "monospace" }}>{t("checkingProject")}</span>
             ) : (
               <>
                 {savedFlash && (
-                  <span style={{ fontSize: 11, color: "#43e97b", fontFamily: "monospace" }}>💾 Kaydedildi</span>
+                  <span style={{ fontSize: 11, color: "#43e97b", fontFamily: "monospace" }}>{t("saved")}</span>
                 )}
                 {result && (
                   <>
                     <button onClick={exportDocs}
                       style={{ background: "rgba(108,99,255,0.15)", border: "1px solid #6c63ff", borderRadius: 6, color: "#6c63ff", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
-                      📥 Belgeyi İndir
+                      {t("downloadDocs")}
                     </button>
                     <button onClick={resetProject}
                       style={{ background: "transparent", border: "1px solid #28304a", borderRadius: 6, color: "#7a7a9a", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
-                      🗑️ Yeni Proje
+                      {t("newProject")}
                     </button>
                   </>
                 )}
@@ -387,7 +399,7 @@ export default function App() {
         {/* INPUT */}
         <div style={{ background: "#101526", border: "1px solid #28304a", borderRadius: 12, padding: "24px 24px 20px", marginBottom: 20, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#6c63ff,#ff6584)" }} />
-          <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 8 }}>Hazır Şablonla Başla</label>
+          <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 8 }}>{t("templatesLabel")}</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
             {TEMPLATES.map((tpl) => (
               <button
@@ -401,12 +413,12 @@ export default function App() {
             ))}
           </div>
 
-          <label style={{ display: "block", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>Proje Fikrin</label>
+          <label style={{ display: "block", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>{t("ideaLabel")}</label>
           <textarea
             value={idea}
             onChange={(e) => setIdea(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && !loading && generate()}
-            placeholder="Örnek: Borsa simülasyon uygulaması yapmak istiyorum..."
+            placeholder={t("ideaPlaceholder")}
             rows={3}
             style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 8, color: "#e8e8f0", fontSize: 14, padding: "12px 14px", resize: "vertical", fontFamily: "inherit", outline: "none", lineHeight: 1.6, boxSizing: "border-box" }}
           />
@@ -421,22 +433,22 @@ export default function App() {
 
           {/* Proje Türü — BÖLÜM 19: Offline Uygulama Mimarı */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #28304a" }}>
-            <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>Proje Türü</label>
+            <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>{t("projectTypeLabel")}</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {["Mobil", "Web", "Masaüstü", "Mobil + Web", "Mobil + Web + Desktop"].map((t) => (
+              {["Mobil", "Web", "Masaüstü", "Mobil + Web", "Mobil + Web + Desktop"].map((pt) => (
                 <button
-                  key={t}
-                  onClick={() => setProjectType(t)}
+                  key={pt}
+                  onClick={() => setProjectType(pt)}
                   type="button"
                   style={{
-                    background: projectType === t ? "rgba(108,99,255,0.18)" : "#161c32",
-                    border: `1px solid ${projectType === t ? "#6c63ff" : "#28304a"}`,
-                    borderRadius: 20, color: projectType === t ? "#6c63ff" : "#a0a0c8",
-                    fontSize: 12, fontWeight: projectType === t ? 600 : 400,
+                    background: projectType === pt ? "rgba(108,99,255,0.18)" : "#161c32",
+                    border: `1px solid ${projectType === pt ? "#6c63ff" : "#28304a"}`,
+                    borderRadius: 20, color: projectType === pt ? "#6c63ff" : "#a0a0c8",
+                    fontSize: 12, fontWeight: projectType === pt ? 600 : 400,
                     padding: "6px 14px", cursor: "pointer", fontFamily: "inherit",
                   }}
                 >
-                  {t}
+                  {t(`projectTypes.${pt}`)}
                 </button>
               ))}
             </div>
@@ -444,37 +456,37 @@ export default function App() {
 
           {/* Proje Detayları — BÖLÜM 18: Fikir Analizi soruları */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #28304a" }}>
-            <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>Fikir Analizi (isteğe bağlı, sonuçları netleştirir)</label>
+            <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>{t("ideaAnalysisLabel")}</label>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
               <div style={{ flex: "1 1 150px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Ücretli mi? Ücretsiz mi?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("pricingLabel")}</label>
                 <select value={pricing} onChange={(e) => setPricing(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Ücretsiz</option>
-                  <option>Ücretli</option>
-                  <option>Abonelik</option>
+                  <option value="Ücretsiz">{t("pricingOptions.Ücretsiz")}</option>
+                  <option value="Ücretli">{t("pricingOptions.Ücretli")}</option>
+                  <option value="Abonelik">{t("pricingOptions.Abonelik")}</option>
                 </select>
               </div>
               <div style={{ flex: "1 1 150px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Veritabanı gerekli mi?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("dbLabel")}</label>
                 <select value={dbNeed} onChange={(e) => setDbNeed(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Hayır</option>
-                  <option>Yerel</option>
-                  <option>Bulut</option>
+                  <option value="Hayır">{t("dbOptions.Hayır")}</option>
+                  <option value="Yerel">{t("dbOptions.Yerel")}</option>
+                  <option value="Bulut">{t("dbOptions.Bulut")}</option>
                 </select>
               </div>
               <div style={{ flex: "1 1 150px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Bulut gerekli mi?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("cloudLabel")}</label>
                 <select value={cloudNeed} onChange={(e) => setCloudNeed(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Hayır</option>
-                  <option>İsteğe bağlı</option>
-                  <option>Evet</option>
+                  <option value="Hayır">{t("cloudOptions.Hayır")}</option>
+                  <option value="İsteğe bağlı">{t("cloudOptions.İsteğe bağlı")}</option>
+                  <option value="Evet">{t("cloudOptions.Evet")}</option>
                 </select>
               </div>
               <div style={{ flex: "1 1 150px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Kullanıcı sayısı</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("userScaleLabel")}</label>
                 <select value={userScale} onChange={(e) => setUserScale(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
                   <option value="100">100</option>
@@ -486,34 +498,34 @@ export default function App() {
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 130px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Harita olacak mı?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("mapLabel")}</label>
                 <select value={hasMap} onChange={(e) => setHasMap(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Hayır</option>
-                  <option>Evet</option>
+                  <option value="Hayır">{t("yesNo.Hayır")}</option>
+                  <option value="Evet">{t("yesNo.Evet")}</option>
                 </select>
               </div>
               <div style={{ flex: "1 1 130px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Bildirim olacak mı?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("notifLabel")}</label>
                 <select value={hasNotif} onChange={(e) => setHasNotif(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Hayır</option>
-                  <option>Evet</option>
+                  <option value="Hayır">{t("yesNo.Hayır")}</option>
+                  <option value="Evet">{t("yesNo.Evet")}</option>
                 </select>
               </div>
               <div style={{ flex: "1 1 130px" }}>
-                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>Ödeme sistemi olacak mı?</label>
+                <label style={{ display: "block", fontSize: 10, color: "#4a4a6a", marginBottom: 4 }}>{t("paymentLabel")}</label>
                 <select value={hasPayment} onChange={(e) => setHasPayment(e.target.value)}
                   style={{ width: "100%", background: "#161c32", border: "1px solid #28304a", borderRadius: 6, color: "#fff", fontSize: 12, padding: "7px 8px", fontFamily: "inherit", cursor: "pointer" }}>
-                  <option>Hayır</option>
-                  <option>Evet</option>
+                  <option value="Hayır">{t("yesNo.Hayır")}</option>
+                  <option value="Evet">{t("yesNo.Evet")}</option>
                 </select>
               </div>
             </div>
           </div>
           <button onClick={generate} disabled={loading || !idea.trim()}
             style={{ width: "100%", background: loading ? "#2f3a5c" : "#6c63ff", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, padding: "13px", cursor: loading ? "not-allowed" : "pointer", marginTop: 12, fontFamily: "inherit" }}>
-            {loading ? `⏳ ${step}` : "⚡ Proje Mimarisini Oluştur  (Ctrl+Enter)"}
+            {loading ? `⏳ ${step}` : t("generateButton")}
           </button>
           {loading && (
             <div style={{ marginTop: 10 }}>
@@ -540,18 +552,18 @@ export default function App() {
               <button
                 onClick={exportPlan}
                 style={{ background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff", borderRadius: 6, color: "#6c63ff", fontFamily: "monospace", fontSize: 11, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}
-                title="Tüm mimari planı Markdown dosyası olarak indir"
+                title={t("exportPlanTitle")}
               >
-                📤 Planı Dışa Aktar (.md)
+                {t("exportPlanButton")}
               </button>
             </div>
 
             {/* Tab bar */}
             <div style={{ display: "flex", gap: 4, marginBottom: 14, overflowX: "auto", paddingBottom: 4 }}>
-              {TABS.map((t) => (
-                <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  style={{ flexShrink: 0, background: activeTab === t.id ? "#6c63ff" : "#101526", border: `1px solid ${activeTab === t.id ? "#6c63ff" : "#28304a"}`, borderRadius: 6, color: activeTab === t.id ? "#fff" : "#7a7a9a", fontSize: 12, fontWeight: 500, padding: "6px 13px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                  {t.label}
+              {TABS.map((tab) => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  style={{ flexShrink: 0, background: activeTab === tab.id ? "#6c63ff" : "#101526", border: `1px solid ${activeTab === tab.id ? "#6c63ff" : "#28304a"}`, borderRadius: 6, color: activeTab === tab.id ? "#fff" : "#7a7a9a", fontSize: 12, fontWeight: 500, padding: "6px 13px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  {t(`tabs.${tab.id}`)}
                 </button>
               ))}
             </div>
