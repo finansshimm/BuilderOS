@@ -116,6 +116,7 @@ export default function App() {
     setHasPayment("Hayır");
     setProjectType("Mobil");
     setActiveTab("bina");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const shortAppName = (name) => {
@@ -275,6 +276,7 @@ export default function App() {
       setLoading(false);
       setStep("");
       setProgress(0);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       showInterstitialOnce();
     }, 400);
   };
