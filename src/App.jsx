@@ -127,14 +127,19 @@ export default function App() {
   };
 
   const buildAppNow = async () => {
-    if (!result || buildingApp) return;
+    if (!idea.trim() || buildingApp) return;
     setBuildingApp(true);
     try {
+      const data = result || computeProjectData();
+      if (!result) {
+        setResult(data);
+        setActiveTab("bina");
+      }
       const blob = await buildScaffoldZip({
         appName: idea.trim(),
-        features: result.features,
-        folders: result.folders,
-        tech: result.tech,
+        features: data.features,
+        folders: data.folders,
+        tech: data.tech,
       });
       await downloadBlob(scaffoldFileName(idea.trim()), blob);
     } finally {
@@ -142,22 +147,14 @@ export default function App() {
     }
   };
 
-  const generate = () => {
-    if (!idea.trim()) return;
-    setLoading(true);
-    setError("");
-    setResult(null);
-
+  const computeProjectData = () => {
     const app = idea.trim();
     const out = {};
 
-    setStep("Manifesto oluşturuluyor..."); setProgress(10);
     out.manifesto = `"${app}" projesi, kullanıcıların ihtiyaç duyduğu temel sorunu dijital ortamda çözmek amacıyla geliştirilmektedir. Hedef kitle: uygulamayı günlük hayatında kullanacak bireyler ve küçük işletmeler. Temel sorun: mevcut çözümlerin karmaşıklığı ve maliyeti. Çözüm: ${projectType} üzerinde çalışan, ${dbNeed === "Hayır" ? "tamamen çevrimdışı, ücretsiz" : dbNeed + " veritabanı kullanan"} bir uygulama. Gelir modeli: ${pricing}. Beş yıl içinde bu uygulama, alanında referans çözüm haline gelmeyi ve ${userScale} kullanıcıya ulaşmayı hedeflemektedir. Geliştirme süreci P1–P20 bina metaforu ile yönetilecek, her adım audit ve refactor döngüsüyle desteklenecektir.`;
 
-    setStep("Mimari harita çiziliyor..."); setProgress(20);
     out.mimari = `"${app}" mimarisi ${projectType} platformu için Flutter tabanlı, tek kod tabanıyla tasarlanmıştır. Sistem katmanları: Sunum Katmanı (UI/Ekranlar) → İş Mantığı Katmanı (Servisler/Provider) → Veri Katmanı (${dbNeed === "Hayır" ? "Yerel Depolama" : dbNeed}). Veri akışı: kullanıcı etkileşimi → state yönetimi → servis katmanı → veri kaynağı → UI güncelleme. Modüller arası bağımlılık: core/ bağımsız; features/ core'a bağımlı; screens/ features'a bağımlı. ${cloudNeed !== "Hayır" ? "Bulut senkronizasyonu isteğe bağlı açılıp kapatılabilir." : "Bulut gerektirmez, tamamen yerel çalışır."} Güvenlik: kimlik doğrulama → token yönetimi → rol tabanlı erişim. Ölçeklenebilirlik: ${userScale} kullanıcıya kadar mevcut mimari yeterli.`;
 
-    setStep("Teknoloji önerisi hazırlanıyor..."); setProgress(30);
     const isOyunFikri = /dedektif|vaka|oyun|game/i.test(app);
     out.tech = {
       Frontend: projectType === "Web" ? "Flutter Web" : projectType === "Masaüstü" ? "Flutter Desktop" : projectType === "Mobil + Web" ? "Flutter (Mobil + Web, tek kod tabanı)" : projectType === "Mobil + Web + Desktop" ? "Flutter (Mobil + Web + Desktop, tek kod tabanı)" : "Flutter (Mobil)",
@@ -170,7 +167,6 @@ export default function App() {
       Harita: hasMap === "Evet" ? "Google Maps / OpenStreetMap" : "Gerekli değil",
     };
 
-    setStep("Özellikler listeleniyor..."); setProgress(40);
     const featureTemplates = [
       { name: "Kullanıcı Kayıt / Giriş", priority: "Yüksek", risk: "Orta", desc: "E-posta veya sosyal giriş ile kimlik doğrulama" },
       { name: "Ana Ekran Dashboard", priority: "Yüksek", risk: "Düşük", desc: "Kullanıcıya özel ana sayfa ve özet bilgiler" },
@@ -185,7 +181,6 @@ export default function App() {
     ];
     out.features = featureTemplates;
 
-    setStep("Güvenlik planı hazırlanıyor..."); setProgress(54);
     out.security = [
       { category: "Temel", items: [
         { title: "Temel Güvenlik", desc: "Şifreleme, güvenli depolama, erişim kontrolü ve oturum yönetimi" },
@@ -209,7 +204,6 @@ export default function App() {
       ]},
     ];
 
-    setStep("Yol haritası oluşturuluyor..."); setProgress(64);
     out.roadmap = [
       { version: "v0.1", desc: "İlk fikir — proje kurulumu, klasörler, core yapı" },
       { version: "v0.2", desc: "İlk ekranlar — login, ana sayfa, navigasyon akışı" },
@@ -224,7 +218,6 @@ export default function App() {
       { version: "v2.0", desc: "Büyük güncelleme — mimari yeniden yapılanma" },
     ];
 
-    setStep("Klasör yapısı üretiliyor..."); setProgress(74);
     const basefolders = ["core/", "features/", "screens/", "widgets/", "services/", "providers/", "models/", "utils/", "assets/", "tests/", "audit/", "documentation/"];
     if (dbNeed === "Yerel") basefolders.push("local_db/");
     if (cloudNeed !== "Hayır") basefolders.push("cloud_sync/");
@@ -232,7 +225,6 @@ export default function App() {
     if (hasNotif === "Evet") basefolders.push("notifications/");
     out.folders = basefolders;
 
-    setStep("Refactor planı çıkarılıyor..."); setProgress(84);
     out.refactor = [
       { madde: "Spaghetti Kod Temizleme", aciklama: "İç içe geçmiş, okunaksız kod bloklarını küçük fonksiyonlara böl" },
       { madde: "Tekrarlanan Kodları Kaldırma", aciklama: "DRY prensibi — aynı mantık tek yerde, her yerden çağrılır" },
@@ -244,7 +236,6 @@ export default function App() {
       { madde: "Gelecek Özelliklere Zemin", aciklama: "Yeni modül eklemek mevcut kodu kırmayacak şekilde yapılandır" },
     ];
 
-    setStep("Test planı hazırlanıyor..."); setProgress(88);
     const riskliOzellikler = (out.features || []).filter(f => f.risk === "Yüksek");
     out.testPlan = [
       { tip: "Unit Test", kapsam: "Servis ve use-case fonksiyonları", ornek: `${app} içindeki iş mantığı fonksiyonlarının girdi/çıktı doğruluğu` },
@@ -255,7 +246,6 @@ export default function App() {
       { tip: "Regresyon Testi", kapsam: "v0.8 feature freeze öncesi tüm ana akışlar", ornek: "Her sürüm öncesi otomatik test paketi çalıştırma" },
     ];
 
-    setStep("Sağlık skoru hesaplanıyor..."); setProgress(96);
     const base = userScale === "100" ? 88 : userScale === "1000" ? 82 : userScale === "10000" ? 76 : 70;
     out.health = [
       { label: "Mimari Kalitesi", value: base + 4 },
@@ -268,9 +258,17 @@ export default function App() {
     ];
     out.debt = `"${app}" projesi başlangıç aşamasında olduğundan teknik borç henüz düşük seviyede. Ancak ${userScale} kullanıcı hedefiyle büyüdükçe veri katmanı ve state yönetimi karmaşıklaşabilir. P1–P8 arasında temel mimari kararların doğru verilmesi kritik öneme sahip. Refactor döngüsü v0.8'den önce planlanmalı.`;
 
-    setProgress(100);
-    setStep("Tamamlandı!");
+    return out;
+  };
+
+  const generate = () => {
+    if (!idea.trim()) return;
+    setLoading(true);
+    setError("");
+    setResult(null);
+    setStep("Mimari üretiliyor..."); setProgress(50);
     setTimeout(() => {
+      const out = computeProjectData();
       setResult(out);
       setActiveTab("bina");
       setLoading(false);
@@ -345,17 +343,17 @@ export default function App() {
                 {savedFlash && (
                   <span style={{ fontSize: 11, color: "#43e97b", fontFamily: "monospace" }}>{t("saved")}</span>
                 )}
+                {idea.trim() && (
+                  <button onClick={buildAppNow} disabled={buildingApp}
+                    style={{ background: "rgba(67,233,123,0.15)", border: "1px solid #43e97b", borderRadius: 6, color: "#43e97b", fontSize: 11, padding: "4px 10px", cursor: buildingApp ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                    {buildingApp ? t("buildingApp") : t("buildAppNowLabel")(shortAppName(idea))}
+                  </button>
+                )}
                 {result && (
-                  <>
-                    <button onClick={buildAppNow} disabled={buildingApp}
-                      style={{ background: "rgba(67,233,123,0.15)", border: "1px solid #43e97b", borderRadius: 6, color: "#43e97b", fontSize: 11, padding: "4px 10px", cursor: buildingApp ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-                      {buildingApp ? t("buildingApp") : t("buildAppNowLabel")(shortAppName(idea))}
-                    </button>
-                    <button onClick={resetProject}
-                      style={{ background: "transparent", border: "1px solid #28304a", borderRadius: 6, color: "#7a7a9a", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
-                      {t("newProject")}
-                    </button>
-                  </>
+                  <button onClick={resetProject}
+                    style={{ background: "transparent", border: "1px solid #28304a", borderRadius: 6, color: "#7a7a9a", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
+                    {t("newProject")}
+                  </button>
                 )}
               </>
             )}
