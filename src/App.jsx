@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 
-const storage = {
+// Claude artifact sandbox'ında native window.storage kullanılır;
+// gerçek tarayıcı/APK'da (WebView) localStorage'a düşer.
+const storage = (typeof window !== "undefined" && window.storage) || {
   async get(key) {
     try {
       const v = localStorage.getItem(key);
