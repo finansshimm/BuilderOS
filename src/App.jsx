@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { storage } from "./lib/storage";
 import { downloadText } from "./lib/download";
 import { buildPlanMarkdown } from "./lib/exportPlan";
+import { initAds, showInterstitialOnce } from "./lib/ads";
 import { PHASES, DEV_PHASES } from "./data/phases";
 import { EXAMPLES, TABS } from "./data/constants";
 import { TEMPLATES } from "./data/templates";
@@ -45,6 +46,11 @@ export default function App() {
   const [hasPayment, setHasPayment] = useState("Hayır");
   // BÖLÜM 19 — Proje Türü
   const [projectType, setProjectType] = useState("Mobil");
+
+  // Reklamları başlat (sadece Android/iOS uygulamasında, web'de no-op)
+  useEffect(() => {
+    initAds();
+  }, []);
 
   // Sayfa açılırken kayıtlı projeyi yükle
   useEffect(() => {
@@ -304,6 +310,7 @@ export default function App() {
       setLoading(false);
       setStep("");
       setProgress(0);
+      showInterstitialOnce();
     }, 400);
   };
 

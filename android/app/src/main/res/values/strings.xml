@@ -4,4 +4,7 @@
     <string name="title_activity_main">BuilderOS</string>
     <string name="package_name">com.finansshimm.builderos</string>
     <string name="custom_url_scheme">com.finansshimm.builderos</string>
+    <!-- Google'ın resmi TEST AdMob App ID'si. Gerçek ID'ni aldığında bunu VE
+         src/config/adsConfig.js dosyasındaki ID'leri güncelle, sonra yeniden derle. -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>
