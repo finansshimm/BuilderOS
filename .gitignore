@@ -31,3 +31,4 @@ android/build/
 android/captures/
 *.jks
 *.keystore
+android/keystore.properties

@@ -1,4 +1,4 @@
-package com.uygulaman.mimaristudyosu;
+package com.finansshimm.builderos;
 
 import com.getcapacitor.BridgeActivity;
 

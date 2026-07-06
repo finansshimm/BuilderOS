@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Uygulama Mimari Studyosu</string>
-    <string name="title_activity_main">Uygulama Mimari Studyosu</string>
-    <string name="package_name">com.uygulaman.mimaristudyosu</string>
-    <string name="custom_url_scheme">com.uygulaman.mimaristudyosu</string>
+    <string name="app_name">BuilderOS</string>
+    <string name="title_activity_main">BuilderOS</string>
+    <string name="package_name">com.finansshimm.builderos</string>
+    <string name="custom_url_scheme">com.finansshimm.builderos</string>
 </resources>
