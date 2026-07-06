@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { storage } from "./lib/storage";
+import { downloadText } from "./lib/download";
+import { buildPlanMarkdown } from "./lib/exportPlan";
 import { PHASES, DEV_PHASES } from "./data/phases";
 import { EXAMPLES, TABS } from "./data/constants";
+import { TEMPLATES } from "./data/templates";
 import Panel from "./components/Panel";
 import BinaView from "./components/BinaView";
 import TaskBoardView from "./components/TaskBoardView";
@@ -310,6 +313,25 @@ export default function App() {
     }, 400);
   };
 
+  const pickTemplate = (tpl) => {
+    setIdea(tpl.idea);
+    setProjectType(tpl.projectType);
+    setDbNeed(tpl.dbNeed);
+    setCloudNeed(tpl.cloudNeed);
+    setUserScale(tpl.userScale);
+    setPricing(tpl.pricing);
+    setHasMap(tpl.hasMap);
+    setHasNotif(tpl.hasNotif);
+    setHasPayment(tpl.hasPayment);
+  };
+
+  const exportPlan = () => {
+    if (!result) return;
+    const md = buildPlanMarkdown(idea.trim(), result);
+    const safeName = idea.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "proje";
+    downloadText(`${safeName}-mimari-plan.md`, md, "text/markdown;charset=utf-8");
+  };
+
   const copy = (text, key) => {
     navigator.clipboard.writeText(typeof text === "object" ? JSON.stringify(text, null, 2) : text);
     setCopied(key);
@@ -365,6 +387,20 @@ export default function App() {
         {/* INPUT */}
         <div style={{ background: "#101526", border: "1px solid #28304a", borderRadius: 12, padding: "24px 24px 20px", marginBottom: 20, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#6c63ff,#ff6584)" }} />
+          <label style={{ display: "block", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 8 }}>Hazır Şablonla Başla</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+            {TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.id}
+                onClick={() => pickTemplate(tpl)}
+                title={tpl.idea}
+                style={{ background: "#161c32", border: "1px solid #28304a", borderRadius: 20, color: "#a0a0c8", fontSize: 12, padding: "5px 12px", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {tpl.icon} {tpl.label}
+              </button>
+            ))}
+          </div>
+
           <label style={{ display: "block", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#7a7a9a", marginBottom: 10 }}>Proje Fikrin</label>
           <textarea
             value={idea}
@@ -499,6 +535,17 @@ export default function App() {
         {/* SONUÇLAR */}
         {result && (
           <>
+            {/* Planı dışa aktar */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+              <button
+                onClick={exportPlan}
+                style={{ background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff", borderRadius: 6, color: "#6c63ff", fontFamily: "monospace", fontSize: 11, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}
+                title="Tüm mimari planı Markdown dosyası olarak indir"
+              >
+                📤 Planı Dışa Aktar (.md)
+              </button>
+            </div>
+
             {/* Tab bar */}
             <div style={{ display: "flex", gap: 4, marginBottom: 14, overflowX: "auto", paddingBottom: 4 }}>
               {TABS.map((t) => (
@@ -710,7 +757,7 @@ export default function App() {
             {/* 🔧 BUILDER */}
             {activeTab === "builder" && (
               <Panel icon="🔧" bg="rgba(58,214,224,0.12)" title="Builder Dosyası Üreticisi" sub="FIX.PY / BUILDER.PY ŞABLONU">
-                <BuilderView appName={idea.trim()} features={result.features} folders={result.folders} />
+                <BuilderView appName={idea.trim()} features={result.features} folders={result.folders} tech={result.tech} />
               </Panel>
             )}
 

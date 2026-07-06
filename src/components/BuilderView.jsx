@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { downloadBlob } from "../lib/download";
+import { buildScaffoldZip, scaffoldFileName } from "../lib/scaffold";
 
 const BUILDER_TYPES = [
   { id: "fix",         label: "fix.py",          icon: "🔧", desc: "Hataları otomatik düzelten entegrasyon dosyası" },
@@ -16,8 +18,9 @@ const DEV_METHODS = [
   { id: "patch",      label: "Otomatik patch sistemi ile", desc: "Küçük patch dosyaları üretilsin, her biri ayrı uygulansın." },
 ];
 
-export default function BuilderView({ appName, features, folders }) {
+export default function BuilderView({ appName, features, folders, tech }) {
   const [selectedType, setSelectedType] = useState(BUILDER_TYPES[0]);
+  const [scaffolding, setScaffolding] = useState(false);
   const [devMethod, setDevMethod]       = useState(DEV_METHODS[1]);
   const [customTask, setCustomTask]     = useState("");
   const [loading, setLoading]           = useState(false);
@@ -142,6 +145,17 @@ if __name__ == "__main__":
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const downloadScaffold = async () => {
+    if (!appName || scaffolding) return;
+    setScaffolding(true);
+    try {
+      const blob = await buildScaffoldZip({ appName, features, folders, tech });
+      downloadBlob(scaffoldFileName(appName), blob);
+    } finally {
+      setScaffolding(false);
+    }
+  };
+
   const downloadFile = () => {
     if (!output) return;
     const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
@@ -162,6 +176,23 @@ if __name__ == "__main__":
         AI çıktısını projeye uygulayan, hata düzelten, özellik ekleyen Python dosyaları üret.
         Kopyala veya indir, <code style={{ background: "#161c32", padding: "1px 5px", borderRadius: 3, fontSize: 11 }}>python fix.py</code> ile çalıştır.
       </p>
+
+      {/* Gerçek proje iskeleti indirme */}
+      <div style={{ background: "rgba(67,233,123,0.06)", border: "1px solid rgba(67,233,123,0.25)", borderRadius: 8, padding: "12px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#43e97b", marginBottom: 2 }}>📦 Gerçek Proje İskeleti</div>
+          <div style={{ fontSize: 11, color: "#7a7a9a", lineHeight: 1.5 }}>
+            Seçtiğin teknoloji ve özelliklere göre çalıştırılabilir bir Flutter proje iskeleti (pubspec.yaml, lib/main.dart, klasörler) üretir ve zip olarak indirir.
+          </div>
+        </div>
+        <button
+          onClick={downloadScaffold}
+          disabled={!appName || scaffolding}
+          style={{ flexShrink: 0, background: scaffolding ? "#2f3a5c" : "#43e97b", color: "#0a0e1f", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, padding: "9px 16px", cursor: !appName || scaffolding ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+        >
+          {scaffolding ? "⏳ Hazırlanıyor..." : "⬇ İskeleti İndir (.zip)"}
+        </button>
+      </div>
 
       {/* Geliştirme yöntemi seçici — Bölüm 18 madde 10 */}
       <div style={{ marginBottom: 16 }}>
