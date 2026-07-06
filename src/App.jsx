@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { storage } from "./lib/storage";
-import { downloadText } from "./lib/download";
+import { downloadText, downloadBlob } from "./lib/download";
 import { buildPlanMarkdown } from "./lib/exportPlan";
+import { buildScaffoldZip, scaffoldFileName } from "./lib/scaffold";
 import { initAds, showInterstitialOnce } from "./lib/ads";
-import { PHASES, DEV_PHASES } from "./data/phases";
 import { EXAMPLES, TABS } from "./data/constants";
 import { TEMPLATES } from "./data/templates";
 import { useLanguage } from "./i18n/LanguageContext";
@@ -33,6 +33,7 @@ export default function App() {
   const [result, setResult]       = useState(null);
   const [error, setError]         = useState("");
   const [copied, setCopied]       = useState("");
+  const [buildingApp, setBuildingApp] = useState(false);
   const [currentPhase, setCurrentPhase] = useState(1);
   const [dbNeed, setDbNeed]       = useState("Yerel");
   const [cloudNeed, setCloudNeed] = useState("Hayır");
@@ -117,63 +118,27 @@ export default function App() {
     setActiveTab("bina");
   };
 
-  const exportDocs = () => {
-    if (!result) return;
-    const lines = [];
-    lines.push(`# ${idea.trim() || "Proje"} — Mimari Dokümantasyonu`);
-    lines.push(`\n_Oluşturulma: ${new Date().toLocaleDateString("tr-TR")}_`);
-    lines.push(`\n## Master Prompt (Manifesto)\n\n${result.manifesto || ""}`);
-    lines.push(`\n## Architecture Manifest\n\n${result.mimari || ""}`);
-    lines.push(`\n## Feature Manifest`);
-    (result.features || []).forEach((f) => lines.push(`- **${f.name}** — Öncelik: ${f.priority}, Risk: ${f.risk}${f.desc ? " — " + f.desc : ""}`));
-    lines.push(`\n## Güvenlik Manifestosu`);
-    (result.security || []).forEach((cat) => {
-      lines.push(`\n### ${cat.category}`);
-      (cat.items || []).forEach((s) => lines.push(`- **${s.title}**: ${s.desc}`));
-    });
-    lines.push(`\n## Test Planı`);
-    (result.testPlan || []).forEach((t) => lines.push(`- **${t.tip}** — ${t.kapsam}: ${t.ornek}`));
-    lines.push(`\n## Geliştirme Fazları`);
-    DEV_PHASES.forEach((faz) => {
-      lines.push(`\n### Faz ${faz.num}: ${faz.label} ${faz.icon}`);
-      lines.push(faz.desc);
-      faz.items.forEach((it) => lines.push(`- ${it}`));
-      lines.push(`**Çıktı:** ${faz.cikti}`);
-    });
-    lines.push(`\n## Version Roadmap`);
-    (result.roadmap || []).forEach((v) => lines.push(`- **${v.version}** — ${v.desc}`));
-    lines.push(`\n## Klasör Yapısı\n\n\`\`\`\n${(result.folders || []).join("\n")}\n\`\`\``);
-    lines.push(`\n## Proje Sağlık Skoru`);
-    (result.health || []).forEach((h) => lines.push(`- ${h.label}: ${h.value}/100`));
-    if (result.debt) lines.push(`\n### Teknik Borç Analizi\n\n${result.debt}`);
-    lines.push(`\n## Bina İlerlemesi (P1–P20) — Detaylı Rehber`);
-    PHASES.forEach((p, i) => {
-      const num = i + 1;
-      const st = num < currentPhase ? "✅ Tamamlandı" : num === currentPhase ? "🔨 Devam Ediyor" : "⬜ Bekliyor";
-      lines.push(`\n### ${p.num} — ${p.name} (${p.bina}) ${st}`);
-      lines.push(`**Teknik özet:** ${p.desc}`);
-      if (p.basit) lines.push(`\n**🧒 Basitçe anlatırsak:** ${p.basit}`);
-      lines.push(`\n**Görevler:**`);
-      (p.gorevler || []).forEach((g) => lines.push(`- ${g}`));
-      lines.push(`\n**Riskler:**`);
-      (p.riskler || []).forEach((r) => lines.push(`- ⚠ ${r}`));
-      if (p.rehber) lines.push(`\n**✏️ Şimdi sen dene:** ${p.rehber}`);
-      if (p.teknolojiler) {
-        lines.push(`\n**🧰 Kullanılacak araçlar:**`);
-        p.teknolojiler.forEach((t) => lines.push(`- **${t.isim}** — Ne işe yarar? ${t.ne} | Neden kullanıyoruz? ${t.neden}`));
-      }
-    });
-    lines.push(`\n## Proje Detayları`);
-    lines.push(`- Beklenen kullanıcı sayısı: ${userScale}`);
-    lines.push(`- Veritabanı ihtiyacı: ${dbNeed}`);
-    lines.push(`- Bulut ihtiyacı: ${cloudNeed}`);
-    lines.push(`\n## Builder Dosyaları`);
-    lines.push(`Projeye özel üretilebilecek dosyalar: fix.py, builder.py, integrator.py, audit.py, generator.py, updater.py`);
-    lines.push(`Kullanım: \`python fix.py\` — AI çıktısını projeye uygular`);
+  const shortAppName = (name) => {
+    const clean = (name || "").trim();
+    if (!clean) return "";
+    const firstClause = clean.split(/\s+—\s+/)[0];
+    return firstClause.length <= 30 ? firstClause : clean.slice(0, 30).trim() + "…";
+  };
 
-    const md = lines.join("\n");
-    const safeName = (idea.trim() || "proje").toLowerCase().replace(/[^a-z0-9ığüşöçİĞÜŞÖÇ\s-]/gi, "").trim().replace(/\s+/g, "-").slice(0, 40) || "proje";
-    downloadText(`${safeName}-dokumantasyon.md`, md, "text/markdown;charset=utf-8");
+  const buildAppNow = async () => {
+    if (!result || buildingApp) return;
+    setBuildingApp(true);
+    try {
+      const blob = await buildScaffoldZip({
+        appName: idea.trim(),
+        features: result.features,
+        folders: result.folders,
+        tech: result.tech,
+      });
+      await downloadBlob(scaffoldFileName(idea.trim()), blob);
+    } finally {
+      setBuildingApp(false);
+    }
   };
 
   const generate = () => {
@@ -380,9 +345,9 @@ export default function App() {
                 )}
                 {result && (
                   <>
-                    <button onClick={exportDocs}
-                      style={{ background: "rgba(108,99,255,0.15)", border: "1px solid #6c63ff", borderRadius: 6, color: "#6c63ff", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
-                      {t("downloadDocs")}
+                    <button onClick={buildAppNow} disabled={buildingApp}
+                      style={{ background: "rgba(67,233,123,0.15)", border: "1px solid #43e97b", borderRadius: 6, color: "#43e97b", fontSize: 11, padding: "4px 10px", cursor: buildingApp ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                      {buildingApp ? t("buildingApp") : t("buildAppNowLabel")(shortAppName(idea))}
                     </button>
                     <button onClick={resetProject}
                       style={{ background: "transparent", border: "1px solid #28304a", borderRadius: 6, color: "#7a7a9a", fontSize: 11, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
