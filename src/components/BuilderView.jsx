@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { downloadBlob } from "../lib/download";
+import { downloadBlob, downloadText } from "../lib/download";
 import { buildScaffoldZip, scaffoldFileName } from "../lib/scaffold";
 
 const BUILDER_TYPES = [
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     setScaffolding(true);
     try {
       const blob = await buildScaffoldZip({ appName, features, folders, tech });
-      downloadBlob(scaffoldFileName(appName), blob);
+      await downloadBlob(scaffoldFileName(appName), blob);
     } finally {
       setScaffolding(false);
     }
@@ -158,15 +158,7 @@ if __name__ == "__main__":
 
   const downloadFile = () => {
     if (!output) return;
-    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = selectedType.label;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadText(selectedType.label, output, "text/plain;charset=utf-8");
   };
 
   return (

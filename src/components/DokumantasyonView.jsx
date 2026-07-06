@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { downloadText } from "../lib/download";
 
 const DOC_TYPES = [
   { id: "readme",    label: "README.md",       icon: "📖", color: "#6c63ff", desc: "Projeye giriş, kurulum, kullanım kılavuzu" },
@@ -50,15 +51,7 @@ export default function DokumantasyonView({ appName, features, result, currentPh
 
   const downloadDoc = () => {
     if (!output) return;
-    const blob = new Blob([output], { type: "text/markdown;charset=utf-8" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = selectedDoc.label;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadText(selectedDoc.label, output, "text/markdown;charset=utf-8");
   };
 
   return (

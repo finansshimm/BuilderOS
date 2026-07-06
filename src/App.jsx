@@ -166,16 +166,8 @@ export default function App() {
     lines.push(`Kullanım: \`python fix.py\` — AI çıktısını projeye uygular`);
 
     const md = lines.join("\n");
-    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
     const safeName = (idea.trim() || "proje").toLowerCase().replace(/[^a-z0-9ığüşöçİĞÜŞÖÇ\s-]/gi, "").trim().replace(/\s+/g, "-").slice(0, 40) || "proje";
-    a.download = `${safeName}-dokumantasyon.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadText(`${safeName}-dokumantasyon.md`, md, "text/markdown;charset=utf-8");
   };
 
   const generate = () => {
@@ -327,11 +319,11 @@ export default function App() {
     setHasPayment(tpl.hasPayment);
   };
 
-  const exportPlan = () => {
+  const exportPlan = async () => {
     if (!result) return;
     const md = buildPlanMarkdown(idea.trim(), result);
     const safeName = idea.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "proje";
-    downloadText(`${safeName}-mimari-plan.md`, md, "text/markdown;charset=utf-8");
+    await downloadText(`${safeName}-mimari-plan.md`, md, "text/markdown;charset=utf-8");
   };
 
   const copy = (text, key) => {
