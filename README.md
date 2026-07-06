@@ -1,16 +1,34 @@
-# React + Vite
+# BuilderOS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Turn ideas into real applications. BuilderOS — The operating system for building applications from idea to launch.
 
-Currently, two official plugins are available:
+Offline React app that walks a project through 20 development phases (P1–P20), with built-in tools: template/builder file generator, zombie-bug analyzer, task board, security checklist, roadmap, and an audit system.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- React 19 + Vite
+- Data persisted locally via `localStorage` (fully offline, no backend)
+- Packaged as an Android app with [Capacitor](https://capacitorjs.com/)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Build web app
+
+```bash
+npm run build
+```
+
+## Build Android APK
+
+```bash
+npx cap sync android
+cd android
+./gradlew assembleDebug
+```
+
+The debug APK is produced at `android/app/build/outputs/apk/debug/app-debug.apk`.
