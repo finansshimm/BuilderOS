@@ -40,4 +40,4 @@ Bu politika zaman zaman güncellenebilir. Güncellemeler bu sayfada yayınlanır
 
 ## 8. İletişim
 
-Sorularınız için: **bend41625@gmail.com**
+Sorularınız için: **sinekrem1@gmail.com**
