@@ -38,6 +38,11 @@ Tüm proje verileriniz cihazınızda kaldığından, hesabınızın veya veriler
 
 Bu politika zaman zaman güncellenebilir. Güncellemeler bu sayfada yayınlanır.
 
-## 8. İletişim
+## 8. Verilerinizin Kontrolü
+
+- Uygulama içindeki proje sıfırlama özelliğiyle mevcut proje verilerinizi istediğiniz an silebilirsiniz.
+- Uygulamayı cihazınızdan kaldırdığınızda (uninstall) tüm yerel veriler otomatik olarak silinir.
+
+## 9. İletişim
 
 Sorularınız için: **sinekrem1@gmail.com**
